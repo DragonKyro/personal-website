@@ -1,0 +1,558 @@
+/* ============================================================ tokens */
+
+:root {
+  --font-sans: 'Geist', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'Geist Mono', ui-monospace, 'SF Mono', 'Cascadia Code', Menlo, monospace;
+
+  --radius-sm: 8px;
+  --radius: 14px;
+  --radius-lg: 20px;
+  --container: 1120px;
+  --gutter: clamp(1.25rem, 4vw, 2rem);
+  --nav-h: 64px;
+  --banner-h: 0px;
+
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* Seasons set these two hues; everything accent-coloured derives from them. */
+  --accent-h: 285;
+  --accent2-h: 40;
+}
+
+[data-theme='dark'] {
+  color-scheme: dark;
+  --bg: #09090b;
+  --bg-elev: #111114;
+  --surface: rgb(255 255 255 / 0.03);
+  --surface-2: rgb(255 255 255 / 0.06);
+  --border: rgb(255 255 255 / 0.08);
+  --border-strong: rgb(255 255 255 / 0.15);
+  --text: #f4f4f5;
+  --text-muted: #a1a1aa;
+  --text-faint: #71717a;
+  --dot: rgb(255 255 255 / 0.09);
+  --shadow: 0 1px 0 rgb(255 255 255 / 0.04) inset, 0 20px 50px -20px rgb(0 0 0 / 0.7);
+  --accent: oklch(0.74 0.15 var(--accent-h));
+  --accent-2: oklch(0.76 0.15 var(--accent2-h));
+  --glow-strength: 18%;
+}
+
+[data-theme='light'] {
+  color-scheme: light;
+  --bg: #fafaf9;
+  --bg-elev: #ffffff;
+  --surface: rgb(0 0 0 / 0.02);
+  --surface-2: rgb(0 0 0 / 0.045);
+  --border: rgb(0 0 0 / 0.08);
+  --border-strong: rgb(0 0 0 / 0.15);
+  --text: #18181b;
+  --text-muted: #52525b;
+  --text-faint: #8a8a93;
+  --dot: rgb(0 0 0 / 0.1);
+  --shadow: 0 1px 2px rgb(0 0 0 / 0.04), 0 20px 40px -24px rgb(0 0 0 / 0.18);
+  --accent: oklch(0.55 0.19 var(--accent-h));
+  --accent-2: oklch(0.62 0.17 var(--accent2-h));
+  --glow-strength: 12%;
+}
+
+/* ============================================================ base */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html.has-banner {
+  --banner-h: 38px;
+}
+
+html {
+  scroll-behavior: smooth;
+  scrollbar-gutter: stable;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  padding-top: var(--banner-h);
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.6;
+  font-feature-settings: 'ss01', 'cv11';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  overflow-x: clip;
+}
+
+/* Film grain — barely there, but takes the flatness off large dark areas. */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  pointer-events: none;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+h1,
+h2,
+h3,
+h4,
+p {
+  margin: 0;
+}
+
+h1,
+h2,
+h3 {
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  text-wrap: balance;
+}
+
+p {
+  text-wrap: pretty;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+
+img,
+svg {
+  display: block;
+}
+
+ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+::selection {
+  background: color-mix(in oklab, var(--accent) 35%, transparent);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+section[id] {
+  scroll-margin-top: calc(var(--banner-h) + var(--nav-h) + 8px);
+}
+
+/* Theme switch: let the JS-driven clip-path circle do the work. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+/* ============================================================ layout */
+
+.container {
+  width: 100%;
+  max-width: calc(var(--container) + var(--gutter) * 2);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+.section {
+  position: relative;
+  padding-block: clamp(5rem, 11vw, 8.5rem);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.skip-link {
+  position: fixed;
+  top: 12px;
+  left: 12px;
+  z-index: 200;
+  padding: 0.6rem 1rem;
+  border-radius: 999px;
+  background: var(--text);
+  color: var(--bg);
+  font-weight: 500;
+  translate: 0 -200%;
+  transition: translate 0.2s var(--ease-out);
+}
+.skip-link:focus {
+  translate: 0 0;
+}
+
+/* ============================================================ section heading */
+
+.section-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1.5rem 2rem;
+  margin-bottom: clamp(2.5rem, 5vw, 3.5rem);
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 1rem;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+.eyebrow__index {
+  color: var(--accent);
+}
+.eyebrow::after {
+  content: '';
+  width: 2.5rem;
+  height: 1px;
+  background: linear-gradient(90deg, var(--border-strong), transparent);
+}
+
+.section-title {
+  font-size: clamp(2rem, 4.6vw, 3.25rem);
+  letter-spacing: -0.04em;
+}
+
+.section-desc {
+  max-width: 34rem;
+  margin-top: 1rem;
+  color: var(--text-muted);
+  font-size: 1.05rem;
+}
+
+/* ============================================================ buttons & bits */
+
+.btn {
+  --btn-h: 46px;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  height: var(--btn-h);
+  padding: 0 1.25rem;
+  border-radius: 999px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  white-space: nowrap;
+  transition:
+    translate 0.35s var(--ease-out),
+    background-color 0.2s,
+    border-color 0.2s,
+    box-shadow 0.3s,
+    color 0.2s;
+}
+.btn svg {
+  width: 17px;
+  height: 17px;
+  transition: transform 0.35s var(--ease-out);
+}
+
+.btn--primary {
+  background: var(--text);
+  color: var(--bg);
+  box-shadow: 0 0 0 0 color-mix(in oklab, var(--accent) 0%, transparent);
+}
+.btn--primary:hover {
+  box-shadow: 0 8px 30px -6px color-mix(in oklab, var(--accent) 55%, transparent);
+}
+
+.btn--ghost {
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  backdrop-filter: blur(8px);
+}
+.btn--ghost:hover {
+  background: var(--surface-2);
+  border-color: color-mix(in oklab, var(--accent) 45%, var(--border-strong));
+}
+
+.btn:hover .icon-nudge-down {
+  transform: translateY(2px);
+}
+.btn:hover .icon-nudge-right {
+  transform: translateX(3px);
+}
+.btn:hover .icon-nudge-diag {
+  transform: translate(2px, -2px);
+}
+
+.icon-btn {
+  display: inline-grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  color: var(--text-muted);
+  transition:
+    color 0.2s,
+    background-color 0.2s;
+}
+.icon-btn:hover {
+  color: var(--text);
+  background: var(--surface-2);
+}
+.icon-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+kbd,
+.kbd {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.15em;
+  min-width: 1.6em;
+  height: 1.6em;
+  padding: 0 0.4em;
+  border: 1px solid var(--border-strong);
+  border-bottom-width: 2px;
+  border-radius: 6px;
+  background: var(--surface);
+  font-family: var(--font-mono);
+  font-size: 0.72em;
+  line-height: 1;
+  color: var(--text-muted);
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  height: 24px;
+  padding: 0 0.6rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+
+.link-arrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+.link-arrow svg {
+  width: 16px;
+  height: 16px;
+  transition: transform 0.35s var(--ease-out);
+}
+.link-arrow:hover {
+  color: var(--text);
+}
+.link-arrow:hover svg {
+  transform: translate(2px, -2px);
+}
+
+.gradient-text {
+  background: linear-gradient(100deg, var(--accent), var(--accent-2));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* ============================================================ spotlight card
+   A card inside a useSpotlight() container. The border and a soft inner wash
+   follow the cursor across the whole group. */
+
+.spotlight {
+  --mx: -999px;
+  --my: -999px;
+  position: relative;
+  isolation: isolate;
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+.spotlight::before,
+.spotlight::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.4s;
+}
+.spotlight::before {
+  z-index: 2;
+  padding: 1px;
+  background: radial-gradient(320px circle at var(--mx) var(--my), color-mix(in oklab, var(--accent) 75%, transparent), transparent 70%);
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+}
+.spotlight::after {
+  z-index: -1;
+  background: radial-gradient(
+    480px circle at var(--mx) var(--my),
+    color-mix(in oklab, var(--accent) var(--glow-strength), transparent),
+    transparent 60%
+  );
+}
+.spotlight-group:hover .spotlight::before {
+  opacity: 1;
+}
+.spotlight:hover::after {
+  opacity: 1;
+}
+
+/* ============================================================ reveal */
+
+.reveal {
+  opacity: 0;
+  transform: translateY(18px);
+  filter: blur(6px);
+  transition:
+    opacity 0.9s var(--ease-out),
+    transform 0.9s var(--ease-out),
+    filter 0.9s var(--ease-out);
+  transition-delay: var(--delay, 0ms);
+}
+.reveal.is-in {
+  opacity: 1;
+  transform: none;
+  filter: none;
+}
+
+/* ============================================================ motion off */
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0ms !important;
+  }
+  .reveal {
+    filter: none;
+    transform: none;
+  }
+}
+
+/* ============================================================ shared pieces */
+
+/* Makes a whole card clickable from one link, while other links inside stay usable. */
+.stretched-link::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: inherit;
+}
+
+.app-icon {
+  --size: 44px;
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: var(--size);
+  height: var(--size);
+  border-radius: calc(var(--size) * 0.28);
+  background:
+    radial-gradient(120% 90% at 20% 0%, rgb(255 255 255 / 0.35), transparent 55%),
+    linear-gradient(145deg, oklch(0.72 0.16 var(--hue)), oklch(0.52 0.18 calc(var(--hue) + 35)));
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.3),
+    inset 0 -1px 0 rgb(0 0 0 / 0.15),
+    0 6px 16px -6px oklch(0.5 0.18 var(--hue) / 0.6);
+  color: #fff;
+}
+.app-icon svg {
+  width: 52%;
+  height: 52%;
+  filter: drop-shadow(0 1px 1px rgb(0 0 0 / 0.2));
+}
+.app-icon__glyph {
+  font-size: calc(var(--size) * 0.5);
+  font-weight: 700;
+  line-height: 1;
+  text-shadow: 0 1px 2px rgb(0 0 0 / 0.2);
+  font-family: 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', var(--font-sans);
+}
+
+.toaster {
+  position: fixed;
+  left: 50%;
+  bottom: 1.5rem;
+  z-index: 120;
+  translate: -50% 0;
+  pointer-events: none;
+}
+.toast {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.65rem 1rem;
+  border-radius: 999px;
+  background: var(--text);
+  color: var(--bg);
+  font-size: 0.875rem;
+  font-weight: 500;
+  box-shadow: var(--shadow);
+  animation: toast-in 2.2s var(--ease-out) both;
+}
+.toast svg {
+  width: 16px;
+  height: 16px;
+}
+@keyframes toast-in {
+  0% {
+    opacity: 0;
+    transform: translateY(12px) scale(0.96);
+  }
+  12%,
+  85% {
+    opacity: 1;
+    transform: none;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}

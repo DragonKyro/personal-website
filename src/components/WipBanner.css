@@ -1,0 +1,99 @@
+.wip-banner {
+  --wip: #f59e0b;
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 60;
+  height: var(--banner-h);
+  background: color-mix(in oklab, var(--wip) 13%, var(--bg));
+  color: var(--text);
+  font-size: 0.825rem;
+  animation: wip-in 0.6s var(--ease-out) both;
+}
+[data-theme='light'] .wip-banner {
+  --wip: #d97706;
+}
+
+/* Caution-tape stripe along the bottom edge. */
+.wip-banner::after {
+  content: '';
+  position: absolute;
+  inset: auto 0 0;
+  height: 3px;
+  background: repeating-linear-gradient(
+    -45deg,
+    var(--wip) 0 8px,
+    color-mix(in oklab, var(--wip) 15%, var(--bg)) 8px 16px
+  );
+  background-size: 22.63px 3px; /* one stripe period along the x-axis: 16px / cos(45°) */
+  animation: wip-tape 1.6s linear infinite;
+  opacity: 0.85;
+}
+
+@keyframes wip-tape {
+  to {
+    background-position: 22.63px 0;
+  }
+}
+@keyframes wip-in {
+  from {
+    transform: translateY(-100%);
+  }
+}
+
+.wip-banner__inner {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  height: 100%;
+  padding-bottom: 3px;
+}
+.wip-banner__icon {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  color: var(--wip);
+}
+.wip-banner__text {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--text-muted);
+}
+.wip-banner__text strong {
+  font-weight: 600;
+  color: var(--text);
+}
+.wip-banner__sep {
+  margin-inline: 0.45rem;
+  color: var(--text-faint);
+}
+.wip-banner__close {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 26px;
+  height: 26px;
+  margin-right: -6px;
+  border-radius: 7px;
+  color: var(--text-muted);
+  transition:
+    background-color 0.2s,
+    color 0.2s;
+}
+.wip-banner__close:hover {
+  background: color-mix(in oklab, var(--wip) 18%, transparent);
+  color: var(--text);
+}
+.wip-banner__close svg {
+  width: 15px;
+  height: 15px;
+}
+
+@media (max-width: 560px) {
+  .wip-banner__sep,
+  .wip-banner__message {
+    display: none;
+  }
+}
